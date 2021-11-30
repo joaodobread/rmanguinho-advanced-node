@@ -14,23 +14,27 @@ describe('FacebookAuthenticationService', () => {
   let crypto: MockProxy<TokenGenerator>
   let userAccountRepo: MockProxy<LoadUserAccountRepository & SaveFacebookAccountRepository>
   let sut: FacebookAuthenticationService
-  const token = 'any-token'
 
-  beforeEach(() => {
+  let token: string
+
+  beforeAll(() => {
     facebookApi = mock<LoadFacebookUserApi>()
-    userAccountRepo = mock()
-    crypto = mock()
-    crypto.generateToken.mockResolvedValue('any-generated-token')
-    sut = new FacebookAuthenticationService(facebookApi, userAccountRepo, crypto)
-
-    userAccountRepo.load.mockResolvedValue(undefined)
-    userAccountRepo.saveWithFacebook.mockResolvedValue({ id: 'any-account-id' })
-
     facebookApi.loadUser.mockResolvedValue({
       name: 'any-facebook-name',
       email: 'any-facebook-email',
       facebookId: 'any-fb-id'
     })
+    userAccountRepo = mock()
+    userAccountRepo.load.mockResolvedValue(undefined)
+    userAccountRepo.saveWithFacebook.mockResolvedValue({ id: 'any-account-id' })
+    crypto = mock()
+    crypto.generateToken.mockResolvedValue('any-generated-token')
+
+    token = 'any-token'
+  })
+
+  beforeEach(() => {
+    sut = new FacebookAuthenticationService(facebookApi, userAccountRepo, crypto)
   })
 
   test('should call LoadFacebookApi with correct params', async () => {
@@ -54,16 +58,13 @@ describe('FacebookAuthenticationService', () => {
   test('should call SaveFacebookAccountRepository with FacebookAccount', async () => {
     const FacebookAccountStub = jest.fn().mockImplementation(() => ({ any: 'any' }))
     mocked(FacebookAccount).mockImplementation(FacebookAccountStub)
-
     await sut.perform({ token })
-
     expect(userAccountRepo.saveWithFacebook).toHaveBeenCalledWith({ any: 'any' })
     expect(userAccountRepo.saveWithFacebook).toHaveBeenCalledTimes(1)
   })
 
   test('should call TokenGenerator with correct params', async () => {
     await sut.perform({ token })
-
     expect(crypto.generateToken).toHaveBeenCalledWith({
       key: 'any-account-id',
       expirationInMs: AccessToken.expirationInMs
