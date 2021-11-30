@@ -4,6 +4,7 @@ import { AuthenticationError } from '@/domain/models/errors'
 
 export class FacebookAuthenticationService {
   constructor (private readonly loadFacebookUserByTokenApi: LoadFacebookUserApi) {}
+
   async perform (params: FacebookAuthentication.Params): Promise<AuthenticationError> {
     await this.loadFacebookUserByTokenApi.loadUser(params)
     return new AuthenticationError()
