@@ -6,6 +6,7 @@ import { mock, MockProxy } from 'jest-mock-extended'
 describe('FacebookAuthenticationService', () => {
   let loadFacebookUserApi: MockProxy<LoadFacebookUserApi>
   let sut: FacebookAuthenticationService
+  const token = 'any-token'
 
   beforeEach(() => {
     loadFacebookUserApi = mock<LoadFacebookUserApi>()
@@ -13,13 +14,13 @@ describe('FacebookAuthenticationService', () => {
   })
 
   test('should call LoadFacebookApi with correct params', async () => {
-    await sut.perform({ token: 'any-token' })
-    expect(loadFacebookUserApi.loadUser).toHaveBeenCalledWith({ token: 'any-token' })
+    await sut.perform({ token })
+    expect(loadFacebookUserApi.loadUser).toHaveBeenCalledWith({ token })
     expect(loadFacebookUserApi.loadUser).toHaveBeenCalledTimes(1)
   })
 
   test('should return AuthenticationError when LoadFacebookUserApi returns undefined', async () => {
-    const authResult = await sut.perform({ token: 'any-token' })
+    const authResult = await sut.perform({ token })
     expect(authResult).toEqual(new AuthenticationError())
   })
 })
