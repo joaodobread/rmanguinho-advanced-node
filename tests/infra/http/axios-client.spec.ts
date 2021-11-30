@@ -4,14 +4,15 @@ import axios from 'axios'
 jest.mock('axios')
 
 class AxiosHttpClient {
-  async get (args: HttpGetClient.Params): Promise<void> {
-    await axios.get(args.url, { params: args.params })
+  async get (args: HttpGetClient.Params): Promise<any> {
+    const result = await axios.get(args.url, { params: args.params })
+    return result.data
   }
 }
 
 describe('AxiosHttpClient', () => {
   let sut: AxiosHttpClient
-  let fakeAxios: jest.Mocked < typeof axios >
+  let fakeAxios: jest.Mocked<typeof axios>
   let url: string
   let params: object
 
@@ -23,6 +24,10 @@ describe('AxiosHttpClient', () => {
     fakeAxios = axios as jest.Mocked<typeof axios>
     url = 'any-url'
     params = { any: 'any' }
+    fakeAxios.get.mockResolvedValue({
+      status: 200,
+      data: 'any-data'
+    })
   })
 
   describe('get', () => {
@@ -33,6 +38,16 @@ describe('AxiosHttpClient', () => {
       })
 
       expect(fakeAxios.get).toHaveBeenCalledWith('any-url', { params })
+      expect(fakeAxios.get).toHaveBeenCalledTimes(1)
+    })
+
+    test('should return data on success', async () => {
+      const result = await sut.get({
+        url,
+        params
+      })
+
+      expect(result).toEqual('any-data')
       expect(fakeAxios.get).toHaveBeenCalledTimes(1)
     })
   })
