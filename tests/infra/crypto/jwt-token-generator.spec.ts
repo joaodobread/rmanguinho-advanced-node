@@ -8,9 +8,9 @@ class JwtTokenGenerator {
     private readonly secret: string
   ) {}
 
-  async generateToken (params: TokenGenerator.Params): Promise<void> {
+  async generateToken (params: TokenGenerator.Params): Promise<TokenGenerator.Result> {
     const expirationInSeconds = params.expirationInMs / 1000
-    jwt.sign({ key: params.key }, this.secret, { expiresIn: expirationInSeconds })
+    return jwt.sign({ key: params.key }, this.secret, { expiresIn: expirationInSeconds })
   }
 }
 
@@ -30,5 +30,12 @@ describe('JwtTokenGenerator', () => {
     await sut.generateToken({ key: 'any-key', expirationInMs: 1000 })
 
     expect(fakeJwt.sign).toHaveBeenCalledWith({ key: 'any-key' }, 'any-secret', { expiresIn: 1 })
+  })
+
+  test('should return a token', async () => {
+    fakeJwt.sign.mockImplementationOnce(() => 'any-token')
+    const token = await sut.generateToken({ key: 'any-key', expirationInMs: 1000 })
+
+    expect(token).toBe('any-token')
   })
 })
